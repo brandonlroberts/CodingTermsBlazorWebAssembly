@@ -31,7 +31,7 @@
         <RadzenDataGridColumn TItem="Term" Property="Title" Title="Title" Width="50px" Filterable="true" />
         <RadzenDataGridColumn TItem="Term" Property="Description" Title="Description" TextAlign="TextAlign.Left" Filterable="true">
             <Template Context="description">
-                <RadzenHtmlEditor @bind-Value=@description.Description style="margin-bottom: 1rem;" Disabled>
+                <RadzenHtmlEditor @bind-Value=@description.Description style="margin-bottom: 1rem; white-space:pre-wrap" Disabled>
                     <div style="display:none;"></div>
                 </RadzenHtmlEditor>
             </Template>
@@ -48,75 +48,22 @@
 
     IEnumerable<Term> terms;
 
-    protected override async Task OnInitializedAsync()
-    {
-        terms = await LoadTerms();
-    }
-
-    protected async Task UpdateTerm(int id, string title, string description, DialogService ds)
-    {
-        var existingTerm = terms.Where(x => x.Id == id).FirstOrDefault();
-        existingTerm.Title = title;
-        existingTerm.Description = description;
-        existingTerm.Modified = DateTime.Now;
-        existingTerm.ModifiedBy = "system";
-        var status = await Http.PutAsJsonAsync<Term>("update", existingTerm);
-
-        if (status.IsSuccessStatusCode)
-        {
-            ShowNotification(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Updated Sucessfully", Detail = status.ReasonPhrase, Duration = 4000 });
-            terms = await LoadTerms();
-        }
-        else
-        {
-            ShowNotification(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "An Error Occurred...", Detail = status.ReasonPhrase, Duration = 4000 });
-        }
-        ds.Close(true);
-    }
-
-    protected async Task AddTerm(string title, string description, DialogService ds)
-    {
-        var newTerm = new Term();
-
-        newTerm.Title = title;
-        newTerm.Description = description;
-        newTerm.Created = DateTime.Now;
-        newTerm.CreatedBy = "system";
-        var status = await Http.PostAsJsonAsync<Term>("create", newTerm);
-
-        if (status.IsSuccessStatusCode)
-        {
-            ShowNotification(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Created Sucessfully", Detail = status.ReasonPhrase, Duration = 4000 });
-            terms = await LoadTerms();
-        }
-        else
-        {
-            ShowNotification(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "An Error Occurred...", Detail = status.ReasonPhrase, Duration = 4000 });
-        }
-        ds.Close(true);
-    }
-
-    void ShowNotification(NotificationMessage message)
-    {
-        NotificationService.Notify(message);
-    }
-
     async Task OpenTerm(string description, string title)
     {
         await DialogService.OpenAsync(@title, ds =>
-    @<div>
-                            <div class="row">
-                                <RadzenHtmlEditor @bind-Value=@description style="margin-bottom: 1rem;" Disabled>
-                                    <div style="display:none;"></div>
-                                </RadzenHtmlEditor>
-                            </div>
-                            <div class="row">
-                                <div class="col">
-                                    <RadzenButton Text="Close" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Secondary" Class="mr-1" />
-                                </div>
-                            </div>
-    </div>
-    );
+        @<div>
+            <div class="row">
+                <RadzenHtmlEditor @bind-Value=@description style="margin-bottom: 1rem;" Disabled>
+                    <div style="display:none;"></div>
+                </RadzenHtmlEditor>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <RadzenButton Text="Close" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Secondary" Class="mr-1" />
+                </div>
+            </div>
+        </div>
+        );
     }
 
     async Task AddNewTerm()
@@ -125,56 +72,48 @@
         var description = "";
 
         await DialogService.OpenAsync("Add new term?", ds =>
-    @<div>
-                            <RadzenCard Style="height:475px; width 500px;">
-                                <div class="row mb-4">
-                                    <div class="col">
-                                        <h4>Title</h4>
-                                        <RadzenTextBox @bind-Value=@title Class="w-100" />
-                                    </div>
-                                </div>
-                                <div class="row mb-4">
-                                    <div class="col">
-                                        <h4>Description</h4>
-                                        <BlazingComponents.Summernote.Editor @bind-content="@description" />
-                                    </div>
-                                </div>
-                                <div class="row mb-4">
-                                    <div class="col">
-                                        <RadzenButton Text="Save" Click="args => AddTerm(title, description, ds)" Class="mr-1" Style="width: 100px;" />
-                                        <RadzenButton Text="Cancel" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Secondary" Class="mr-1" />
-                                    </div>
-                                </div>
-                            </RadzenCard>
-    </div>, new DialogOptions() { Width = "700px", Height = "570px", Resizable = true, Draggable = true });
+        @<div>
+            <RadzenCard Style="height:475px; width 500px;">
+                <div class="row mb-4">
+                    <div class="col">
+                        <h4>Title</h4>
+                        <RadzenTextBox @bind-Value=@title Class="w-100" />
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col">
+                        <h4>Description</h4>
+                        <BlazingComponents.Summernote.Editor @bind-content="@description" />
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col">
+                        <RadzenButton Text="Save" Click="args => AddTerm(title, description, ds)" Class="mr-1" Style="width: 100px;" />
+                        <RadzenButton Text="Cancel" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Secondary" Class="mr-1" />
+                    </div>
+                </div>
+            </RadzenCard>
+        </div>, new DialogOptions() { Width = "700px", Height = "570px", Resizable = true, Draggable = true });
     }
 
     async Task EditTerm(string description, string title, int id)
     {
         await DialogService.OpenAsync(@title, ds =>
-    @<div>
-                            <div class="row">
-                                <RadzenTextBox @bind-Value=@title Class="w-100" />
-                            </div>
-                            <div class="row">
-                                <BlazingComponents.Summernote.Editor @bind-content="@description" />
-                            </div>
-                            <div class="row">
-                                <div class="col">
-                                    <RadzenButton Text="Update" Click="args => UpdateTerm(id, title, description, ds)" Class="mr-1" ButtonStyle="ButtonStyle.Primary" />
-                                    <RadzenButton Text="Cancel" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Secondary" Class="mr-1" />
-                                </div>
-                            </div>
-    </div>
-    );
-    }
-
-    private async Task<IEnumerable<Term>> LoadTerms()
-    {
-        _spinnerService.Show();
-        var results = await Http.GetFromJsonAsync<IEnumerable<Term>>("list");
-        _spinnerService.Hide();
-        return results;
+            @<div>
+                <div class="row">
+                    <RadzenTextBox @bind-Value=@title Class="w-100" />
+                </div>
+                <div class="row">
+                    <BlazingComponents.Summernote.Editor @bind-content="@description" />
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <RadzenButton Text="Update" Click="args => UpdateTerm(id, title, description, ds)" Class="mr-1" ButtonStyle="ButtonStyle.Primary" />
+                        <RadzenButton Text="Cancel" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Secondary" Class="mr-1" />
+                    </div>
+                </div>
+            </div>
+        );
     }
 }
 
