@@ -16,19 +16,20 @@
 <RadzenButton Click=@(args => AddNewTerm()) Text="Add New" Icon="add_circle_outline" ButtonStyle="ButtonStyle.Primary" class="mb-2" />
 
 <RadzenDataGrid AllowFiltering="true"
+                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                 AllowColumnResize="true"
-                FilterMode="FilterMode.Simple"
+                FilterMode="FilterMode.Advanced"
                 AllowSorting="true"
                 PageSize="5"
                 AllowPaging="true"
                 PagerHorizontalAlign="HorizontalAlign.Left"
                 ShowPagingSummary="true"
                 Data="@terms"
-                TItem="Term "
+                TItem="Term"
                 ColumnWidth="300px"
                 LogicalFilterOperator="LogicalFilterOperator.Or">
     <Columns>
-        <RadzenDataGridColumn TItem="Term" Property="Title" Title="Title" Width="50px" Filterable="true" />
+        <RadzenDataGridColumn TItem="Term" Property="Title" Title="Title" Width="50px" Filterable="true"/>
         <RadzenDataGridColumn TItem="Term" Property="Description" Title="Description" TextAlign="TextAlign.Left" Filterable="true">
             <Template Context="description">
                 <RadzenHtmlEditor @bind-Value=@description.Description style="margin-bottom: 1rem; white-space:pre-wrap" Disabled>
