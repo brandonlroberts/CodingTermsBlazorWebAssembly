@@ -18,9 +18,9 @@
 <RadzenDataGrid AllowFiltering="true"
                 FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                 AllowColumnResize="true"
-                FilterMode="FilterMode.Advanced"
+                FilterMode="FilterMode.Simple"
                 AllowSorting="true"
-                PageSize="5"
+                PageSize="10"
                 AllowPaging="true"
                 PagerHorizontalAlign="HorizontalAlign.Left"
                 ShowPagingSummary="true"
@@ -29,7 +29,8 @@
                 ColumnWidth="300px"
                 LogicalFilterOperator="LogicalFilterOperator.Or">
     <Columns>
-        <RadzenDataGridColumn TItem="Term" Property="Title" Title="Title" Width="50px" Filterable="true"/>
+        <RadzenDataGridColumn TItem="Term" Property="Title" Title="Title" Width="100px" Filterable="true" />
+        <RadzenDataGridColumn TItem="Term" Property="Keywords" Title="Keywords" Width="100px" Filterable="true" />
         <RadzenDataGridColumn TItem="Term" Property="Description" Title="Description" TextAlign="TextAlign.Left" Filterable="true">
             <Template Context="description">
                 <RadzenHtmlEditor @bind-Value=@description.Description style="margin-bottom: 1rem; white-space:pre-wrap" Disabled>
@@ -39,7 +40,10 @@
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="Term" Title="Edit" Width="50px">
             <Template Context="data">
-                <RadzenButton ButtonStyle="ButtonStyle.Light" Icon="edit" Class="m-1" Click=@(() => EditTerm(data.Description, data.Title, data.Id)) Text="Edit" />
+                @if (data.Id != 0)
+                {
+                    <RadzenButton ButtonStyle="ButtonStyle.Light" Icon="edit" Class="m-1" Click=@(() => EditTerm(data.Description, data.Title, data.Keywords, data.Id)) Text="Edit" />
+                }
             </Template>
         </RadzenDataGridColumn>
     </Columns>
@@ -52,68 +56,79 @@
     async Task OpenTerm(string description, string title)
     {
         await DialogService.OpenAsync(@title, ds =>
-        @<div>
-            <div class="row">
-                <RadzenHtmlEditor @bind-Value=@description style="margin-bottom: 1rem;" Disabled>
-                    <div style="display:none;"></div>
-                </RadzenHtmlEditor>
-            </div>
-            <div class="row">
-                <div class="col">
-                    <RadzenButton Text="Close" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Secondary" Class="mr-1" />
-                </div>
+    @<div>
+        <div class="row">
+            <RadzenTextArea Placeholder="Enter here..." @bind-Value=@description Class="w-100" />
+        </div>
+        <div class="row">
+            <div class="col">
+                <RadzenButton Text="Close" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Secondary" Class="mr-1" />
             </div>
         </div>
-        );
+    </div>
+    );
     }
 
     async Task AddNewTerm()
     {
         var title = "";
         var description = "";
+        var keywords = "";
 
         await DialogService.OpenAsync("Add new term?", ds =>
-        @<div>
-            <RadzenCard Style="height:475px; width 500px;">
-                <div class="row mb-4">
-                    <div class="col">
-                        <h4>Title</h4>
-                        <RadzenTextBox @bind-Value=@title Class="w-100" />
-                    </div>
-                </div>
-                <div class="row mb-4">
-                    <div class="col">
-                        <h4>Description</h4>
-                        <BlazingComponents.Summernote.Editor @bind-content="@description" />
-                    </div>
-                </div>
-                <div class="row mb-4">
-                    <div class="col">
-                        <RadzenButton Text="Save" Click="args => AddTerm(title, description, ds)" Class="mr-1" Style="width: 100px;" />
-                        <RadzenButton Text="Cancel" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Secondary" Class="mr-1" />
-                    </div>
-                </div>
-            </RadzenCard>
-        </div>, new DialogOptions() { Width = "700px", Height = "570px", Resizable = true, Draggable = true });
-    }
-
-    async Task EditTerm(string description, string title, int id)
-    {
-        await DialogService.OpenAsync(@title, ds =>
-            @<div>
-                <div class="row">
+    @<div>
+        <RadzenCard Style="height:475px; width 500px;">
+            <div class="row mb-4">
+                <div class="col">
+                    <h4>Title</h4>
                     <RadzenTextBox @bind-Value=@title Class="w-100" />
                 </div>
-                <div class="row">
-                    <BlazingComponents.Summernote.Editor @bind-content="@description" />
-                </div>
-                <div class="row">
-                    <div class="col">
-                        <RadzenButton Text="Update" Click="args => UpdateTerm(id, title, description, ds)" Class="mr-1" ButtonStyle="ButtonStyle.Primary" />
-                        <RadzenButton Text="Cancel" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Secondary" Class="mr-1" />
-                    </div>
+            </div>
+            <div class="row mb-4">
+                <div class="col">
+                    <h4>Keywords</h4>
+                    <RadzenTextBox @bind-Value=@keywords Class="w-100" />
                 </div>
             </div>
+            <div class="row mb-4">
+                <div class="col">
+                    <h4>Description</h4>
+                    <RadzenTextArea Placeholder="Enter here..." @bind-Value=@description Class="w-100" />
+                </div>
+            </div>
+            <div class="row mb-4">
+                <div class="col">
+                    <RadzenButton Text="Save" Click="args => AddTerm(title, description, keywords, ds)" Class="mr-1" Style="width: 100px;" />
+                    <RadzenButton Text="Cancel" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Secondary" Class="mr-1" />
+                </div>
+            </div>
+        </RadzenCard>
+    </div>, new DialogOptions() { Width = "700px", Height = "570px", Resizable = true, Draggable = true });
+    }
+
+    async Task EditTerm(string description, string title, string keywords, int id)
+    {
+        await DialogService.OpenAsync(@title, ds =>
+    @<div>
+        <div class="row mb-4">
+            <h4><strong></strong>Title</h4>
+            <RadzenTextBox @bind-Value=@title Class="w-100" />
+        </div>
+        <div class="row mb-4">
+            <h4>Keywords</h4>
+            <RadzenTextBox @bind-Value=@keywords Class="w-100" />
+        </div>
+        <div class="row mb-4">
+            <h4>Description</h4>
+            <RadzenTextArea Placeholder="Enter here..." @bind-Value=@description Class="w-100" />
+        </div>
+        <div class="row mb-4">
+            <div class="col">
+                <RadzenButton Text="Update" Click="args => UpdateTerm(id, title, description, keywords, ds)" Class="mr-1" ButtonStyle="ButtonStyle.Primary" />
+                <RadzenButton Text="Cancel" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Secondary" Class="mr-1" />
+            </div>
+        </div>
+    </div>
         );
     }
 }

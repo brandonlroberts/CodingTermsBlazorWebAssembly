@@ -11,11 +11,12 @@ namespace CodingTermsUI.Pages.CodingTerms
             terms = await LoadTerms();
         }
 
-        protected async Task UpdateTerm(int id, string title, string description, DialogService ds)
+        protected async Task UpdateTerm(int id, string title, string description, string keywords, DialogService ds)
         {
             var existingTerm = terms.Where(x => x.Id == id).FirstOrDefault();
             existingTerm.Title = title;
             existingTerm.Description = description;
+            existingTerm.Keywords = keywords;
             existingTerm.Modified = DateTime.Now;
             existingTerm.ModifiedBy = "system";
             var status = await Http.PutAsJsonAsync<Term>("update", existingTerm);
@@ -32,12 +33,13 @@ namespace CodingTermsUI.Pages.CodingTerms
             ds.Close(true);
         }
 
-        protected async Task AddTerm(string title, string description, DialogService ds)
+        protected async Task AddTerm(string title, string description, string keywords, DialogService ds)
         {
             var newTerm = new Term();
 
             newTerm.Title = title;
             newTerm.Description = description;
+            newTerm.Keywords = keywords;
             newTerm.Created = DateTime.Now;
             newTerm.CreatedBy = "system";
             var status = await Http.PostAsJsonAsync<Term>("create", newTerm);
